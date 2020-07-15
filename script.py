@@ -94,7 +94,7 @@ class Script:
 
     @staticmethod
     def get_script():
-        doc = open('letter.md', 'r').read()
+        doc = open('script.md', 'r').read()
 
         markdown = mistune.create_markdown(renderer=mistune.AstRenderer())
         markdown_ast = markdown(doc)
