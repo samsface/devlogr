@@ -29,8 +29,8 @@ def generate_email_section(section):
     return Template(email_html_template).render(level=section.level, title=section.title, text=section.text, src=Media(section.media.src).gif(), alt=section.media.alt, email=(section.media.opts.find('!email') == -1))
 
 def generate_email_(sections):
-    pool = Pool()
-    res = pool.map(generate_email_section, sections)
+    with Pool() as pool:
+        res = pool.map(generate_email_section, sections)
 
     return Template(email_html_template_body).render(body=''.join(res))
 
