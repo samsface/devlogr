@@ -14,7 +14,7 @@ def cmd_(cmd_str):
     return subprocess.check_output(cmd_str)
 
 def ffmpeg(cmd_str):
-    cmd('ffmpeg -hide_banner -loglevel warning ' + cmd_str)
+    cmd('ffmpeg -nostdin -hide_banner -loglevel warning ' + cmd_str)
 
 class Media:
     path = ''
