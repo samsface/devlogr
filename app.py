@@ -9,7 +9,7 @@ def clean_tmp_dirs():
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description='Misc batch jobs for Conan upkeep')
     ap.add_argument('path',       help='path of project', nargs='?', default=os.getcwd())
-    ap.add_argument('--generate', help='material to generate', choices=['email', 'video'])
+    ap.add_argument('--generate', help='material to generate', choices=['email', 'video', 'youtube-thumbnail'])
     ap.add_argument('--clean',    help='post & publish all output in "out" dir', default=False)
     ap.add_argument('--preview',  help='output smaller lesser quality media', default=False)
     args = ap.parse_args()
@@ -37,6 +37,10 @@ if __name__ == '__main__':
             opts.preview = args.scale = 1024
 
         video_path = videogenerator.generate(script, opts)
-        os.rename(video_path, 'out/youtube.mp4')
+        os.rename(video_path, 'out/video.mp4')
+
+    if args.generate == 'youtube-thumbnail':
+        video_thumbnail_path = videogenerator.generate_thumbnail(script)
+        os.rename(video_thumbnail_path, 'out/video_thumbnail.png')
 
     clean_tmp_dirs()

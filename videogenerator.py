@@ -1,5 +1,5 @@
 from multiprocessing import Pool
-from media import Media, Audio
+from media import Media, Audio, Image
 from itertools import product
 import os
 
@@ -21,3 +21,8 @@ def generate(sections, opts):
         scenes = pool.starmap(generate_video_scene, [(s, opts) for s in sections])
 
     return Media.concat(scenes).mix_in_audio('music.ogg', 1.0, False).path
+
+def generate_thumbnail(sections):
+    random_frame = Media(sections[0].media.src).frame(10).path
+
+    return Image.composite([random_frame, 'thumbnail_template.png']).mix_in_caption(sections[0].title, '/home/sam/projects/devlogr/work/nishuki_pixels.ttf').path

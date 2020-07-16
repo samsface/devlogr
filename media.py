@@ -16,6 +16,36 @@ def cmd_(cmd_str):
 def ffmpeg(cmd_str):
     cmd('ffmpeg -nostdin -hide_banner -loglevel warning ' + cmd_str)
 
+def convert(cmd_str):
+    cmd_(['convert'] + cmd_str)
+
+class Image:
+    path = ''
+
+    def __init__(self, path):
+        self.path = path
+
+    @staticmethod
+    def composite(paths, gravity='west'):
+        output_path  = tmp_path(paths[0])
+        convert(['-size', '1280x720', 'xc:transparent', output_path])
+
+        for path in paths:
+            working_path = tmp_path(paths[0])
+            convert([output_path, path, '-gravity', gravity, '-composite', working_path])
+            output_path = working_path
+
+        return Image(output_path)
+
+    @staticmethod
+    def caption(text, font):
+        output_path  = tmp_path('file.png')
+        convert(['-background', 'black', '-fill', 'white', '-font', font, '-size', '1280x150', 'caption:{0}'.format(text), output_path])
+        return Image(output_path)
+
+    def mix_in_caption(self, text, font):
+        return Image.composite([self.path, Image.caption(text, font).path], 'south')
+
 class Media:
     path = ''
 
@@ -36,12 +66,17 @@ class Media:
         self.path = path
 
     def duration(self):
-        return float(cmd('ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {0}'.format(self.path)))
+        return float(cmd('ffprobe -nostdin -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {0}'.format(self.path)))
 
     def gif(self):
         output_path = tmp_path('file.gif')
         ffmpeg('-y -i {0} -vf fps=24,scale=320:-1 -loop 0 {1}'.format(self.path, output_path))
         return 'data:image/gif;base64,' + cmd('base64 {0}'.format(output_path)).decode('utf-8')
+
+    def frame(self, number):
+        output_path = tmp_path('file.png')
+        ffmpeg('-i {0} -r {1}/{2} {3}%03d.png'.format(self.path, number, number + 1, output_path))
+        return Media(output_path + '001.png')
 
     def cut(self, duration):
         output_path = tmp_path(self.path)
@@ -77,7 +112,7 @@ class Media:
 
     def mix_in_text(self, text):
         output_path = tmp_path(self.path)
-        cmd_(['ffmpeg', '-y', '-i', self.path, '-vf', """drawtext="fontfile='/home/sam/projects/marketing-generater/work/Pixelmania.ttf': text='{0}': fontcolor=white: fontsize=24: box=1: boxcolor=black@1.0: boxborderw=5: x=(w-text_w)/2: y=(h - text_h - 16)""".format(text), '-codec:a', 'copy', output_path])
+        cmd_(['ffmpeg', '-nostdin', '-y', '-i', self.path, '-vf', """drawtext="fontfile='/home/sam/projects/marketing-generater/work/Pixelmania.ttf': text='{0}': fontcolor=white: fontsize=24: box=1: boxcolor=black@1.0: boxborderw=5: x=(w-text_w)/2: y=(h - text_h - 16)""".format(text), '-codec:a', 'copy', output_path])
         return Media(output_path)
 
 class Audio:
